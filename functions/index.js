@@ -68,3 +68,41 @@ exports.delete_user_document = functions.auth.user().onDelete((user, context) =>
 		return false
 	}
 })
+
+// this function will allow to define a type of a entity
+// PERSON and TROUPE could be the possible values
+exports.define_type = functions.https.onCall((data, context) => {
+
+	const type_user = data.type;
+
+	// Authentication / user information is automatically added to the request.
+	const uid = context.auth.uid;
+
+	console.log('[Define type] Function has been called by', uid);
+
+	if (uid) {
+		//user document
+		const u_doc = '/users/' + uid;
+
+		console.log('[Define type] Accessing to document', u_doc);
+		const docRef = db.collection('users').doc(uid);
+
+		console.log('[Define type] Updating document', u_doc, 'in field type with:', type_user);
+
+		return docRef.update({
+			type: type_user
+		}).catch(error => {
+			console.error(
+				'[Define type] There was a problem at trying to update the document',
+				u_doc,
+				'\nWith error:', error
+			)
+		});
+
+	} else {
+		console.error('[Define type] Invalid user id', user.uid);
+		return false;
+	}
+
+
+})
