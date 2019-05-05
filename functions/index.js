@@ -6,6 +6,9 @@ admin.initializeApp(functions.config().firebase)
 const db = admin.firestore()
 
 var request = require('request');
+var sha1 = require('sha1');
+
+const url_api = 'https://achtin-dev.minka.io';
 
 // this function creates a document when an user has been created
 // this allow us to take control of the user in firestore
@@ -20,10 +23,14 @@ exports.create_user_document = functions.auth.user().onCreate((user, context) =>
 		console.log('[Create user document] Accessing to:', u_doc)
 		const docRef = db.collection('users').doc(user.uid)
 
+		const hash = sha1(user.uid)
+		console.log('[Create user document] Created uid\'s sha1 for handle', hash)
+
 		console.log('[Create user document] Setting information up in the document:', u_doc)
 
 		const default_data = {
 			uid: user.uid,
+			handle: '$' + hash
 		}
 
 		const setInfo = docRef.set(default_data)
@@ -122,7 +129,7 @@ exports.generate_token = functions.https.onCall((data, context) => {
 				'content-type': 'application/x-www-form-urlencoded',
 				'x-api-key': '619Ba31E201Cf85bb60EBBD2cE6aF6700C9f471D8155f52EebDc7eE9'
 			},
-			url: 'https://achtin-dev.minka.io/oauth/token',
+			url: url_api + '/oauth/token',
 			body: "client_id=12cbd94AeA1Bc1dce13Fc4bb0Ad14fEb&secret=82cF3dCDdEEC9f2cD097E7d2cd2DfdFE81F57C5eaCdfF2aF&grant_type=client_credentials"
 		}, (error, response, body) => {
 
