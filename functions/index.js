@@ -117,35 +117,40 @@ exports.define_type = functions.https.onCall((data, context) => {
 })
 
 // this function allows to generate a token and it returns it
-exports.generate_token = functions.https.onCall((data, context) => {
+exports.generate_token = functions.https.onRequest((req, res) => {
 
 	console.log('[generate_token] Function has been called');
 
-	var token;
+	if (req.method === "GET") {
+		var token;
 
-	return new Promise((resolve, reject) => {
-		request.post({
-			headers: {
-				'content-type': 'application/x-www-form-urlencoded',
-				'x-api-key': '619Ba31E201Cf85bb60EBBD2cE6aF6700C9f471D8155f52EebDc7eE9'
-			},
-			url: url_api + '/oauth/token',
-			body: "client_id=12cbd94AeA1Bc1dce13Fc4bb0Ad14fEb&secret=82cF3dCDdEEC9f2cD097E7d2cd2DfdFE81F57C5eaCdfF2aF&grant_type=client_credentials"
-		}, (error, response, body) => {
+		return new Promise((resolve, reject) => {
+			request.post({
+				headers: {
+					'content-type': 'application/x-www-form-urlencoded',
+					'x-api-key': '619Ba31E201Cf85bb60EBBD2cE6aF6700C9f471D8155f52EebDc7eE9'
+				},
+				url: url_api + '/oauth/token',
+				body: "client_id=12cbd94AeA1Bc1dce13Fc4bb0Ad14fEb&secret=82cF3dCDdEEC9f2cD097E7d2cd2DfdFE81F57C5eaCdfF2aF&grant_type=client_credentials"
+			}, (error, response, body) => {
 
-			console.log('[generate_token] Post request done')
-			token = JSON.parse(body);
+				console.log('[generate_token] Post request done')
+				token = JSON.parse(body);
 
-			if (error) {
-				console.error('[generate_token] ERROR:', error);
-				reject(error);
-			} else {
-				console.log('Access token:', token.access_token);
-				resolve(token.access_token);
-			}
+				if (error) {
+					console.error('[generate_token] ERROR:', error);
+					res.status(400).send('There was an error', error);
+					reject(error);
+				} else {
+					console.log('Access token:', token.access_token);
+					res.status(200).send(token.access_token);
+					resolve(token.access_token);
+				}
+			});
+
 		});
-
-	});
-
-
+	} else {
+		res.status(400).send('Please send a GET request');
+		return;
+	}
 })
